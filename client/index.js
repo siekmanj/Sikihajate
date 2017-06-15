@@ -1,6 +1,7 @@
 var board = document.getElementById('board');
 var ctx = board.getContext('2d');
 var button = document.getElementById('thicc-button');
+var colorButton = document.getElementById('color-button');
 var lastX;
 var lastY;
 var draw = false;
@@ -21,7 +22,7 @@ contributors.addEventListener('click', function(event){
 	for (var i = 0; i < contributor_lis.length; i++){
 		contributor_lis[i].classList.toggle('hidden');
 	}
-	
+
 });
 
 board.addEventListener('mousedown', function(e){
@@ -35,7 +36,6 @@ board.addEventListener('mouseup', function(e){
 board.addEventListener('mouseleave', function(e){
 	draw = false;
 });
-
 
 
 board.addEventListener('mousemove', function(e){
@@ -73,6 +73,24 @@ board.addEventListener('mousemove', function(e){
         CURVE = {};
         newUpdate = false;
     }
+});
+
+var r = 0, g = 0, b = 0;
+
+function updateColor(red, green, blue){
+	r = red;
+	g = green;
+	b = blue;
+	document.getElementById('color-display').style.backgroundColor = 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+colorButton.addEventListener('click', function(){
+	myColor = 'rgb(' + r + ',' + g + ',' + b + ')';
+    socket.emit('colorUpdate', {
+        red: r,
+        green: g,
+        blue: b,
+    });
 });
 
 button.addEventListener('click', function(){
