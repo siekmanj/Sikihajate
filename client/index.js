@@ -2,15 +2,18 @@ var board = document.getElementById('board');
 var ctx = board.getContext('2d');
 var button = document.getElementById('thicc-button');
 var colorButton = document.getElementById('color-button');
+var opacityText = document.getElementById('opacity-text');
 var lastX;
 var lastY;
 var draw = false;
 var socket = io();
 var newUpdate = false;
 var myColor;
+var myOpacity;
 var myWidth = 1;
 var contributorsList = document.getElementById('contributors-ul');
 var contributorsIsOpen = false;
+var currentContributors = [];
 
 var oldWidths = []; //should only hold the 3 last widths
 oldWidths.push(ctx.lineWidth);
@@ -86,7 +89,7 @@ function updateColor(red, green, blue){
 	document.getElementById('color-display').style.backgroundColor = 'rgb(' + r + ',' + g + ',' + b + ')';
 }
 
-colorButton.addEventListener('click', function(){
+colorButton.addEventListener('click', function(){ //Changes user curve color and sends a package to the server containing the new rgb color.
 	myColor = 'rgb(' + r + ',' + g + ',' + b + ')';
     socket.emit('colorUpdate', {
         red: r,
@@ -118,24 +121,35 @@ function changeWidth(newWidth) {
   myWidth = newWidth;
 }
 
-socket.on('contributors', function(sockets){
+function changeOpacity(newOpacity) { //Changes user opacity fade rate and sends a package to the server containing the new fade rate.
+    myOpacity = newOpacity;
+    socket.emit('changeOpacity', {
+        fadeRate: newOpacity,
+    });
+    opacityText.innerHTML = "Your curves will fade in " + Math.floor(1/(0.0001 * 1000 * myOpacity)) + " seconds. To change that, use this slider.";
+}
+
+
+socket.on('contributors', function(IDs, Colors){ //Updates the list of contributors to reflect who is connected to the server or still has curves drawn on the canvas.
+
 	while (contributorsList.firstChild){
 		contributorsList.removeChild(contributorsList.firstChild);
 	}
 	var newLi;
-	for (var i = 0; i < sockets.length; i++){
-		newLi = createListItem(sockets[i].id);
+	for (var i = 0; i < IDs.length; i++){
+		newLi = createListItem(IDs[i], Colors[i]);
 		contributorsList.appendChild(newLi);
 	}
 });
 
-var createListItem = function(socketID){
+var createListItem = function(socketID, userColor){
 	var newLi = document.createElement('li');
 	newLi.classList.add('contributor-li');
 	if (contributorsIsOpen){
 		newLi.classList.add('hidden');
 	}
 	newLi.textContent = socketID;
+	newLi.style.color = userColor;
 	return newLi;
 }
 
